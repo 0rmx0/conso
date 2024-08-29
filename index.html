@@ -62,10 +62,10 @@
     <h1>Calculateur de Coût de Consommation</h1>
     <div class="container">
         <label for="prixEssence">Prix du carburant (€/L):</label>
-        <input type="number" id="prixEssence" step="0.01" placeholder="Entrez le prix du carburant en €/L">
+        <input type="number" id="prixEssence" step="0.01" placeholder="Entrez le prix du carburant en €/L" oninput="sauvegarderPrix()">
         
         <label for="prixElectricite">Prix de l'électricité (€/kWh):</label>
-        <input type="number" id="prixElectricite" step="0.01" placeholder="Entrez le prix de l'électricité en €/kWh">
+        <input type="number" id="prixElectricite" step="0.01" placeholder="Entrez le prix de l'électricité en €/kWh" oninput="sauvegarderPrix()">
         
         <label for="consoEssence">Consommation de carburant (L/100km):</label>
         <input type="number" id="consoEssence" step="0.01" placeholder="Entrez la consommation en L/100km">
@@ -83,6 +83,26 @@
     </div>
     
     <script>
+        function sauvegarderPrix() {
+            // Sauvegarder les valeurs du prix de l'essence et de l'électricité dans le local storage
+            const prixEssence = parseFloat(document.getElementById('prixEssence').value);
+            const prixElectricite = parseFloat(document.getElementById('prixElectricite').value);
+            localStorage.setItem('prixEssence', prixEssence);
+            localStorage.setItem('prixElectricite', prixElectricite);
+        }
+
+        function chargerPrix() {
+            // Charger les valeurs du prix de l'essence et de l'électricité depuis le local storage
+            const prixEssence = localStorage.getItem('prixEssence');
+            const prixElectricite = localStorage.getItem('prixElectricite');
+            if (prixEssence !== null) {
+                document.getElementById('prixEssence').value = prixEssence;
+            }
+            if (prixElectricite !== null) {
+                document.getElementById('prixElectricite').value = prixElectricite;
+            }
+        }
+
         function calculerCouts() {
             // Récupérer les valeurs des champs
             const prixEssence = parseFloat(document.getElementById('prixEssence').value);
@@ -96,11 +116,15 @@
             
             // Calcul du coût de l'électricité
             const coutElectricite = (consoElectricite / 100) * distance * prixElectricite;
+
+            // Calcul de l'addition des deux coûts
+            const coutTotal = coutEssence + coutElectricite;
             
             // Affichage des résultats
             const resultText = `
                 <p>Coût pour l'essence: ${coutEssence.toFixed(2)} €</p>
                 <p>Coût pour l'électricité: ${coutElectricite.toFixed(2)} €</p>
+                <p><strong>Coût total: ${coutTotal.toFixed(2)} €</strong></p>
             `;
             document.getElementById('resultat').innerHTML = resultText;
             
@@ -118,8 +142,11 @@
             document.getElementById('historique').innerHTML = historique.join('<hr>');
         }
         
-        // Afficher l'historique lors du chargement de la page
-        window.onload = afficherHistorique;
+        // Charger les prix lors du chargement de la page
+        window.onload = function() {
+            chargerPrix();
+            afficherHistorique();
+        };
     </script>
 </body>
 </html>
