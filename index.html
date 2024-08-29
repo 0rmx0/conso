@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Coût de Consommation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="number"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #5cb85c;
+            border: none;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .result {
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .history {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculateur de Coût de Consommation</h1>
+    <div class="container">
+        <label for="prixEssence">Prix du carburant (€/L):</label>
+        <input type="number" id="prixEssence" step="0.01" placeholder="Entrez le prix du carburant en €/L">
+        
+        <label for="prixElectricite">Prix de l'électricité (€/kWh):</label>
+        <input type="number" id="prixElectricite" step="0.01" placeholder="Entrez le prix de l'électricité en €/kWh">
+        
+        <label for="consoEssence">Consommation de carburant (L/100km):</label>
+        <input type="number" id="consoEssence" step="0.01" placeholder="Entrez la consommation en L/100km">
+        
+        <label for="consoElectricite">Consommation d'électricité (kWh/100km):</label>
+        <input type="number" id="consoElectricite" step="0.01" placeholder="Entrez la consommation en kWh/100km">
+        
+        <label for="distance">Distance parcourue (km):</label>
+        <input type="number" id="distance" placeholder="Entrez la distance parcourue en km">
+        
+        <button onclick="calculerCouts()">Calculer les Coûts</button>
+        
+        <div class="result" id="resultat"></div>
+        <div class="history" id="historique"></div>
+    </div>
+    
+    <script>
+        function calculerCouts() {
+            // Récupérer les valeurs des champs
+            const prixEssence = parseFloat(document.getElementById('prixEssence').value);
+            const prixElectricite = parseFloat(document.getElementById('prixElectricite').value);
+            const consoEssence = parseFloat(document.getElementById('consoEssence').value);
+            const consoElectricite = parseFloat(document.getElementById('consoElectricite').value);
+            const distance = parseFloat(document.getElementById('distance').value);
+            
+            // Calcul du coût de l'essence
+            const coutEssence = (consoEssence / 100) * distance * prixEssence;
+            
+            // Calcul du coût de l'électricité
+            const coutElectricite = (consoElectricite / 100) * distance * prixElectricite;
+            
+            // Affichage des résultats
+            const resultText = `
+                <p>Coût pour l'essence: ${coutEssence.toFixed(2)} €</p>
+                <p>Coût pour l'électricité: ${coutElectricite.toFixed(2)} €</p>
+            `;
+            document.getElementById('resultat').innerHTML = resultText;
+            
+            // Sauvegarde des résultats dans le local storage
+            let historique = JSON.parse(localStorage.getItem('historique')) || [];
+            historique.push(resultText);
+            localStorage.setItem('historique', JSON.stringify(historique));
+            
+            // Mise à jour de l'historique affiché
+            afficherHistorique();
+        }
+        
+        function afficherHistorique() {
+            const historique = JSON.parse(localStorage.getItem('historique')) || [];
+            document.getElementById('historique').innerHTML = historique.join('<hr>');
+        }
+        
+        // Afficher l'historique lors du chargement de la page
+        window.onload = afficherHistorique;
+    </script>
+</body>
+</html>
