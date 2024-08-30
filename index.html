@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculateur de Coût de Consommation</title>
+    <title>Calculateur de Coût de Consommation Véhicule Hybride</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -56,33 +56,142 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>Calculateur de Coût de Consommation</h1>
+    <div class="language-selector">
+        <select id="language" onchange="changerLangue()">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="pt">Português</option>
+            <option value="zh">中文</option>
+            <option value="ar">العربية</option>
+        </select>
+    </div>
+    <h1 id="titre">Calculateur de Coût de Consommation Véhicule Hybride</h1>
     <div class="container">
-        <label for="prixEssence">Prix du carburant (€/L):</label>
+        <label for="prixEssence" id="labelPrixEssence">Prix du carburant (€/L):</label>
         <input type="number" id="prixEssence" step="0.01" placeholder="Entrez le prix du carburant en €/L" oninput="sauvegarderPrix()">
         
-        <label for="prixElectricite">Prix de l'électricité (€/kWh):</label>
+        <label for="prixElectricite" id="labelPrixElectricite">Prix de l'électricité (€/kWh):</label>
         <input type="number" id="prixElectricite" step="0.01" placeholder="Entrez le prix de l'électricité en €/kWh" oninput="sauvegarderPrix()">
         
-        <label for="consoEssence">Consommation de carburant (L/100km):</label>
+        <label for="consoEssence" id="labelConsoEssence">Consommation de carburant (L/100km):</label>
         <input type="number" id="consoEssence" step="0.01" placeholder="Entrez la consommation en L/100km">
         
-        <label for="consoElectricite">Consommation d'électricité (kWh/100km):</label>
+        <label for="consoElectricite" id="labelConsoElectricite">Consommation d'électricité (kWh/100km):</label>
         <input type="number" id="consoElectricite" step="0.01" placeholder="Entrez la consommation en kWh/100km">
         
-        <label for="distance">Distance parcourue (km):</label>
+        <label for="distance" id="labelDistance">Distance parcourue (km):</label>
         <input type="number" id="distance" placeholder="Entrez la distance parcourue en km">
         
-        <button onclick="calculerCouts()">Calculer les Coûts</button>
+        <button onclick="calculerCouts()" id="btnCalculer">Calculer les Coûts</button>
+        <button onclick="effacerHistorique()" id="btnEffacer">Effacer l'Historique</button>
         
         <div class="result" id="resultat"></div>
         <div class="history" id="historique"></div>
     </div>
     
     <script>
+        const translations = {
+            fr: {
+                titre: "Calculateur de Coût de Consommation Véhicule Hybride",
+                labelPrixEssence: "Prix du carburant (€/L):",
+                labelPrixElectricite: "Prix de l'électricité (€/kWh):",
+                labelConsoEssence: "Consommation de carburant (L/100km):",
+                labelConsoElectricite: "Consommation d'électricité (kWh/100km):",
+                labelDistance: "Distance parcourue (km):",
+                btnCalculer: "Calculer les Coûts",
+                btnEffacer: "Effacer l'Historique",
+                placeholderPrixEssence: "Entrez le prix du carburant en €/L",
+                placeholderPrixElectricite: "Entrez le prix de l'électricité en €/kWh",
+                placeholderConsoEssence: "Entrez la consommation en L/100km",
+                placeholderConsoElectricite: "Entrez la consommation en kWh/100km",
+                placeholderDistance: "Entrez la distance parcourue en km"
+            },
+            en: {
+                titre: "Hybrid Vehicle Consumption Cost Calculator",
+                labelPrixEssence: "Fuel price (€/L):",
+                labelPrixElectricite: "Electricity price (€/kWh):",
+                labelConsoEssence: "Fuel consumption (L/100km):",
+                labelConsoElectricite: "Electricity consumption (kWh/100km):",
+                labelDistance: "Distance traveled (km):",
+                btnCalculer: "Calculate Costs",
+                btnEffacer: "Clear History",
+                placeholderPrixEssence: "Enter fuel price in €/L",
+                placeholderPrixElectricite: "Enter electricity price in €/kWh",
+                placeholderConsoEssence: "Enter consumption in L/100km",
+                placeholderConsoElectricite: "Enter consumption in kWh/100km",
+                placeholderDistance: "Enter distance traveled in km"
+            },
+            es: {
+                titre: "Calculadora de Costos de Consumo de Vehículos Híbridos",
+                labelPrixEssence: "Precio del combustible (€/L):",
+                labelPrixElectricite: "Precio de la electricidad (€/kWh):",
+                labelConsoEssence: "Consumo de combustible (L/100km):",
+                labelConsoElectricite: "Consumo de electricidad (kWh/100km):",
+                labelDistance: "Distancia recorrida (km):",
+                btnCalculer: "Calcular Costos",
+                btnEffacer: "Borrar Historial",
+                placeholderPrixEssence: "Ingrese el precio del combustible en €/L",
+                placeholderPrixElectricite: "Ingrese el precio de la electricidad en €/kWh",
+                placeholderConsoEssence: "Ingrese el consumo en L/100km",
+                placeholderConsoElectricite: "Ingrese el consumo en kWh/100km",
+                placeholderDistance: "Ingrese la distancia recorrida en km"
+            },
+            pt: {
+                titre: "Calculadora de Custo de Consumo de Veículos Híbridos",
+                labelPrixEssence: "Preço do combustível (€/L):",
+                labelPrixElectricite: "Preço da eletricidade (€/kWh):",
+                labelConsoEssence: "Consumo de combustível (L/100km):",
+                labelConsoElectricite: "Consumo de eletricidade (kWh/100km):",
+                labelDistance: "Distância percorrida (km):",
+                btnCalculer: "Calcular Custos",
+                btnEffacer: "Limpar Histórico",
+                placeholderPrixEssence: "Insira o preço do combustível em €/L",
+                placeholderPrixElectricite: "Insira o preço da eletricidade em €/kWh",
+                placeholderConsoEssence: "Insira o consumo em L/100km",
+                placeholderConsoElectricite: "Insira o consumo em kWh/100km",
+                placeholderDistance: "Insira a distância percorrida em km"
+            },
+            zh: {
+                titre: "混合动力车消费成本计算器",
+                labelPrixEssence: "燃料价格 (€/L):",
+                labelPrixElectricite: "电价 (€/kWh):",
+                labelConsoEssence: "燃料消耗 (L/100km):",
+                labelConsoElectricite: "电力消耗 (kWh/100km):",
+                labelDistance: "行驶距离 (km):",
+                btnCalculer: "计算成本",
+                btnEffacer: "清除历史",
+                placeholderPrixEssence: "输入燃料价格 (€/L)",
+                placeholderPrixElectricite: "输入电价 (€/kWh)",
+                placeholderConsoEssence: "输入燃料消耗 (L/100km)",
+                placeholderConsoElectricite: "输入电力消耗 (kWh/100km)",
+                placeholderDistance: "输入行驶距离 (km)"
+            },
+            ar: {
+                titre: "حاسبة تكلفة استهلاك المركبات الهجينة",
+                labelPrixEssence: "سعر الوقود (€/لتر):",
+                labelPrixElectricite: "سعر الكهرباء (€/كيلوواط ساعة):",
+                labelConsoEssence: "استهلاك الوقود (لتر/100كم):",
+                labelConsoElectricite: "استهلاك الكهرباء (كيلوواط ساعة/100كم):",
+                labelDistance: "المسافة المقطوعة (كم):",
+                btnCalculer: "احسب التكاليف",
+                btnEffacer: "مسح السجل",
+                placeholderPrixEssence: "أدخل سعر الوقود (€/لتر)",
+                placeholderPrixElectricite: "أدخل سعر الكهرباء (€/كيلوواط ساعة)",
+                placeholderConsoEssence: "أدخل استهلاك الوقود (لتر/100كم)",
+                placeholderConsoElectricite: "أدخل استهلاك الكهرباء (كيلوواط ساعة/100كم)",
+                placeholderDistance: "أدخل المسافة المقطوعة (كم)"
+            }
+        };
+
         function sauvegarderPrix() {
             // Sauvegarder les valeurs du prix de l'essence et de l'électricité dans le local storage
             const prixEssence = parseFloat(document.getElementById('prixEssence').value);
@@ -142,10 +251,34 @@
             document.getElementById('historique').innerHTML = historique.join('<hr>');
         }
         
-        // Charger les prix lors du chargement de la page
+        function effacerHistorique() {
+            // Effacer l'historique des résultats sans toucher aux prix
+            localStorage.removeItem('historique');
+            afficherHistorique();
+        }
+        
+        function changerLangue() {
+            const langue = document.getElementById('language').value;
+            document.getElementById('titre').innerText = translations[langue].titre;
+            document.getElementById('labelPrixEssence').innerText = translations[langue].labelPrixEssence;
+            document.getElementById('labelPrixElectricite').innerText = translations[langue].labelPrixElectricite;
+            document.getElementById('labelConsoEssence').innerText = translations[langue].labelConsoEssence;
+            document.getElementById('labelConsoElectricite').innerText = translations[langue].labelConsoElectricite;
+            document.getElementById('labelDistance').innerText = translations[langue].labelDistance;
+            document.getElementById('btnCalculer').innerText = translations[langue].btnCalculer;
+            document.getElementById('btnEffacer').innerText = translations[langue].btnEffacer;
+            document.getElementById('prixEssence').placeholder = translations[langue].placeholderPrixEssence;
+            document.getElementById('prixElectricite').placeholder = translations[langue].placeholderPrixElectricite;
+            document.getElementById('consoEssence').placeholder = translations[langue].placeholderConsoEssence;
+            document.getElementById('consoElectricite').placeholder = translations[langue].placeholderConsoElectricite;
+            document.getElementById('distance').placeholder = translations[langue].placeholderDistance;
+        }
+
+        // Charger les prix et l'historique lors du chargement de la page
         window.onload = function() {
             chargerPrix();
             afficherHistorique();
+            changerLangue(); // Appliquer la langue par défaut
         };
     </script>
 </body>
