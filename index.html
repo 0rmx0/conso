@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculateur de coût de consommation pour véhicules hybrides. Calculez les coûts de carburant et d'électricité pour votre véhicule hybride.">
+    <meta name="keywords" content="calculateur, coût, consommation, véhicule hybride, carburant, électricité">
+    <meta name="author" content="Votre Nom">
+    <meta property="og:title" content="Calculateur de Coût de Consommation Véhicule Hybride">
+    <meta property="og:description" content="Calculez les coûts de carburant et d'électricité pour votre véhicule hybride.">
+    <meta property="og:image" content="URL_de_votre_image">
+    <meta property="og:url" content="URL_de_votre_site">
     <title>Calculateur de Coût de Consommation Véhicule Hybride</title>
     <style>
         body {
@@ -259,6 +266,7 @@
         
         function changerLangue() {
             const langue = document.getElementById('language').value;
+            localStorage.setItem('langue', langue); // Sauvegarder la langue choisie
             document.getElementById('titre').innerText = translations[langue].titre;
             document.getElementById('labelPrixEssence').innerText = translations[langue].labelPrixEssence;
             document.getElementById('labelPrixElectricite').innerText = translations[langue].labelPrixElectricite;
@@ -274,11 +282,13 @@
             document.getElementById('distance').placeholder = translations[langue].placeholderDistance;
         }
 
-        // Charger les prix et l'historique lors du chargement de la page
+        // Charger les prix, l'historique et la langue lors du chargement de la page
         window.onload = function() {
             chargerPrix();
             afficherHistorique();
-            changerLangue(); // Appliquer la langue par défaut
+            const langue = localStorage.getItem('langue') || 'fr'; // Charger la langue sauvegardée ou par défaut 'fr'
+            document.getElementById('language').value = langue;
+            changerLangue();
         };
     </script>
 </body>
