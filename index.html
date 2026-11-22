@@ -12,110 +12,247 @@
     <meta property="og:url" content="URL_de_votre_site">
     <title>Calculateur de Coût de Consommation Véhicule Hybride</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
+        @font-face {
+            font-family: 'IBM Plex Mono';
+            src: url('fonts/IBMPlexMono-Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
         }
-        h1 {
-            text-align: center;
-            color: #333;
+        @font-face {
+            font-family: 'IBM Plex Mono';
+            src: url('fonts/IBMPlexMono-Bold.woff2') format('woff2');
+            font-weight: 700;
+            font-style: normal;
         }
-        .container {
-            max-width: 600px;
+
+        :root {
+            --rmx-term-fond: #0a0f0a;
+            --rmx-term-texte: #33ff66;
+            --rmx-term-halo: 0 0 6px rgba(51, 255, 102, 0.55);
+            --rmx-term-taille: clamp(9px, 1.55vw, 16px);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            background: var(--rmx-term-fond);
+            color: var(--rmx-term-texte);
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            font-size: var(--rmx-term-taille);
+            line-height: 1.25;
+            text-shadow: var(--rmx-term-halo);
+            scrollbar-width: thin;
+            scrollbar-color: var(--rmx-term-texte) var(--rmx-term-fond);
+        }
+
+        .terminal {
+            max-width: 64em;
             margin: 0 auto;
-            background: white;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 1.2em;
         }
-        input[type="number"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+
+        h1 {
+            font-size: 1.75em;
+            margin: 0;
+            text-transform: uppercase;
         }
-        button {
-            padding: 10px 20px;
-            background-color: #5cb85c;
+
+        h2 {
+            font-size: 1em;
+            margin: 1.2em 0 0.4em;
+            text-transform: uppercase;
+        }
+
+        /* Curseur bloc clignotant — le seul mouvement autorisé */
+        .curseur::after {
+            content: '█';
+            animation: rmx-blink 1s steps(1) infinite;
+        }
+        @keyframes rmx-blink { 50% { opacity: 0; } }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1em;
+            flex-wrap: wrap;
+        }
+
+        .langue {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        hr.sep {
             border: none;
-            color: white;
+            border-top: 1px solid var(--rmx-term-texte);
+            margin: 1em 0;
+        }
+
+        .ligne {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            margin: 0.6em 0;
+            flex-wrap: wrap;
+        }
+
+        .ligne label { min-width: 24em; }
+
+        input[type="number"], select {
+            font: inherit;
+            color: var(--rmx-term-texte);
+            background: var(--rmx-term-fond);
+            border: 1px solid var(--rmx-term-texte);
+            border-radius: 0;
+            padding: 0.35em 0.6em;
+            width: 12em;
+            text-shadow: var(--rmx-term-halo);
+        }
+
+        select { width: auto; cursor: pointer; }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input::placeholder {
+            color: var(--rmx-term-texte);
+            opacity: 0.55;
+            text-shadow: none;
+        }
+
+        input:focus, select:focus, button:focus {
+            outline: none;
+            box-shadow: var(--rmx-term-halo);
+        }
+
+        .actions {
+            display: flex;
+            gap: 1em;
+            margin: 1.2em 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            font: inherit;
             cursor: pointer;
-            width: 100%;
-            margin: 10px 0;
-            border-radius: 4px;
+            border-radius: 0;
+            padding: 0.5em 1em;
         }
-        button:hover {
-            background-color: #4cae4c;
+
+        .btn-primaire {
+            background: var(--rmx-term-texte);
+            color: var(--rmx-term-fond);
+            border: 1px solid var(--rmx-term-texte);
+            text-shadow: none;
         }
-        .result {
-            padding: 10px;
-            margin-top: 20px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            text-align: center;
+
+        .btn-secondaire {
+            background: transparent;
+            color: var(--rmx-term-texte);
+            border: 1px solid var(--rmx-term-texte);
         }
-        .history {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+
+        .zone {
+            border: 1px solid var(--rmx-term-texte);
+            padding: 0.8em 1em;
+            min-height: 4em;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
-        .language-selector {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+
+        footer { margin-top: 2em; }
+
+        .cache {
+            opacity: 0.85;
+            word-break: break-all;
         }
     </style>
 </head>
 <body>
-    <div class="language-selector">
-        <select id="language" onchange="changerLangue()">
-            <option value="fr">Français</option>
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="pt">Português</option>
-            <option value="zh">中文</option>
-            <option value="ar">العربية</option>
-        </select>
-    </div>
-    <h1 id="titre">Calculateur de Coût de Consommation Véhicule Hybride</h1>
-    <div class="container">
-        <label for="prixEssence" id="labelPrixEssence">Prix du carburant (€/L):</label>
-        <input type="number" id="prixEssence" step="0.01" placeholder="Entrez le prix du carburant en €/L" oninput="sauvegarderPrix()">
-        
-        <label for="prixElectricite" id="labelPrixElectricite">Prix de l'électricité (€/kWh):</label>
-        <input type="number" id="prixElectricite" step="0.01" placeholder="Entrez le prix de l'électricité en €/kWh" oninput="sauvegarderPrix()">
-        
-        <label for="consoEssence" id="labelConsoEssence">Consommation de carburant (L/100km):</label>
-        <input type="number" id="consoEssence" step="0.01" placeholder="Entrez la consommation en L/100km">
-        
-        <label for="consoElectricite" id="labelConsoElectricite">Consommation d'électricité (kWh/100km):</label>
-        <input type="number" id="consoElectricite" step="0.01" placeholder="Entrez la consommation en kWh/100km">
-        
-        <label for="distance" id="labelDistance">Distance parcourue (km):</label>
-        <input type="number" id="distance" placeholder="Entrez la distance parcourue en km">
-        
-        <button onclick="calculerCouts()" id="btnCalculer">Calculer les Coûts</button>
-        <button onclick="effacerHistorique()" id="btnEffacer">Effacer l'Historique</button>
-        
-        <div class="result" id="resultat"></div>
-        <div class="history" id="historique"></div>
-    </div>
-    
+    <main class="terminal">
+        <header>
+            <h1 id="titre">Calculateur de Coût de Consommation Véhicule Hybride</h1><span class="curseur" aria-hidden="true"></span>
+            <div class="langue">
+                <label for="language" id="labelLangue">Langue :</label>
+                <select id="language" onchange="changerLangue()">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="pt">Português</option>
+                    <option value="zh">中文</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
+        </header>
+        <hr class="sep">
+        <div class="ligne">
+            <label for="prixEssence" id="labelPrixEssence">Prix du carburant (€/L):</label>
+            <input type="number" id="prixEssence" step="0.01" placeholder="Entrez le prix du carburant en €/L" oninput="sauvegarderPrix()">
+        </div>
+        <div class="ligne">
+            <label for="prixElectricite" id="labelPrixElectricite">Prix de l'électricité (€/kWh):</label>
+            <input type="number" id="prixElectricite" step="0.01" placeholder="Entrez le prix de l'électricité en €/kWh" oninput="sauvegarderPrix()">
+        </div>
+        <div class="ligne">
+            <label for="consoEssence" id="labelConsoEssence">Consommation de carburant (L/100km):</label>
+            <input type="number" id="consoEssence" step="0.01" placeholder="Entrez la consommation en L/100km">
+        </div>
+        <div class="ligne">
+            <label for="consoElectricite" id="labelConsoElectricite">Consommation d'électricité (kWh/100km):</label>
+            <input type="number" id="consoElectricite" step="0.01" placeholder="Entrez la consommation en kWh/100km">
+        </div>
+        <div class="ligne">
+            <label for="distance" id="labelDistance">Distance parcourue (km):</label>
+            <input type="number" id="distance" placeholder="Entrez la distance parcourue en km">
+        </div>
+        <div class="actions">
+            <button type="button" id="btnCalculer" class="btn-primaire" onclick="calculerCouts()">[ Calculer les Coûts ]</button>
+            <button type="button" id="btnEffacer" class="btn-secondaire" onclick="effacerHistorique()">[ Effacer l'Historique ]</button>
+        </div>
+        <hr class="sep">
+        <h2 id="labelResultat">Résultat :</h2>
+        <div class="zone" id="resultat">EN ATTENTE DE CALCUL...</div>
+        <h2 id="labelHistorique">Historique :</h2>
+        <div class="zone" id="historique">VIDE</div>
+        <footer>
+            <p class="cache">L1JNTSBjb25zbzogLy8gVEVSTUlOQUwtUlNY</p>
+        </footer>
+    </main>
+
     <script>
+        let langueCourante = 'fr';
+
         const translations = {
             fr: {
                 titre: "Calculateur de Coût de Consommation Véhicule Hybride",
+                labelLangue: "Langue :",
                 labelPrixEssence: "Prix du carburant (€/L):",
                 labelPrixElectricite: "Prix de l'électricité (€/kWh):",
                 labelConsoEssence: "Consommation de carburant (L/100km):",
                 labelConsoElectricite: "Consommation d'électricité (kWh/100km):",
                 labelDistance: "Distance parcourue (km):",
-                btnCalculer: "Calculer les Coûts",
-                btnEffacer: "Effacer l'Historique",
+                btnCalculer: "[ Calculer les Coûts ]",
+                btnEffacer: "[ Effacer l'Historique ]",
+                labelResultat: "Résultat :",
+                labelHistorique: "Historique :",
+                enAttente: "EN ATTENTE DE CALCUL...",
+                vide: "VIDE",
+                coutEssence: "Coût carburant :",
+                coutElectricite: "Coût électricité :",
+                coutTotal: "Coût total :",
+                invalide: "ENTRÉE INVALIDE — VÉRIFIEZ LES CHAMPS",
                 placeholderPrixEssence: "Entrez le prix du carburant en €/L",
                 placeholderPrixElectricite: "Entrez le prix de l'électricité en €/kWh",
                 placeholderConsoEssence: "Entrez la consommation en L/100km",
@@ -124,13 +261,22 @@
             },
             en: {
                 titre: "Hybrid Vehicle Consumption Cost Calculator",
+                labelLangue: "Language:",
                 labelPrixEssence: "Fuel price (€/L):",
                 labelPrixElectricite: "Electricity price (€/kWh):",
                 labelConsoEssence: "Fuel consumption (L/100km):",
                 labelConsoElectricite: "Electricity consumption (kWh/100km):",
                 labelDistance: "Distance traveled (km):",
-                btnCalculer: "Calculate Costs",
-                btnEffacer: "Clear History",
+                btnCalculer: "[ Calculate Costs ]",
+                btnEffacer: "[ Clear History ]",
+                labelResultat: "Result:",
+                labelHistorique: "History:",
+                enAttente: "AWAITING CALCULATION...",
+                vide: "EMPTY",
+                coutEssence: "Fuel cost:",
+                coutElectricite: "Electricity cost:",
+                coutTotal: "Total cost:",
+                invalide: "INVALID INPUT — CHECK THE FIELDS",
                 placeholderPrixEssence: "Enter fuel price in €/L",
                 placeholderPrixElectricite: "Enter electricity price in €/kWh",
                 placeholderConsoEssence: "Enter consumption in L/100km",
@@ -139,13 +285,22 @@
             },
             es: {
                 titre: "Calculadora de Costos de Consumo de Vehículos Híbridos",
+                labelLangue: "Idioma:",
                 labelPrixEssence: "Precio del combustible (€/L):",
                 labelPrixElectricite: "Precio de la electricidad (€/kWh):",
                 labelConsoEssence: "Consumo de combustible (L/100km):",
                 labelConsoElectricite: "Consumo de electricidad (kWh/100km):",
                 labelDistance: "Distancia recorrida (km):",
-                btnCalculer: "Calcular Costos",
-                btnEffacer: "Borrar Historial",
+                btnCalculer: "[ Calcular Costos ]",
+                btnEffacer: "[ Borrar Historial ]",
+                labelResultat: "Resultado:",
+                labelHistorique: "Historial:",
+                enAttente: "ESPERANDO CÁLCULO...",
+                vide: "VACÍO",
+                coutEssence: "Coste combustible:",
+                coutElectricite: "Coste electricidad:",
+                coutTotal: "Coste total:",
+                invalide: "ENTRADA NO VÁLIDA — REVISE LOS CAMPOS",
                 placeholderPrixEssence: "Ingrese el precio del combustible en €/L",
                 placeholderPrixElectricite: "Ingrese el precio de la electricidad en €/kWh",
                 placeholderConsoEssence: "Ingrese el consumo en L/100km",
@@ -154,13 +309,22 @@
             },
             pt: {
                 titre: "Calculadora de Custo de Consumo de Veículos Híbridos",
+                labelLangue: "Idioma:",
                 labelPrixEssence: "Preço do combustível (€/L):",
                 labelPrixElectricite: "Preço da eletricidade (€/kWh):",
                 labelConsoEssence: "Consumo de combustível (L/100km):",
                 labelConsoElectricite: "Consumo de eletricidade (kWh/100km):",
                 labelDistance: "Distância percorrida (km):",
-                btnCalculer: "Calcular Custos",
-                btnEffacer: "Limpar Histórico",
+                btnCalculer: "[ Calcular Custos ]",
+                btnEffacer: "[ Limpar Histórico ]",
+                labelResultat: "Resultado:",
+                labelHistorique: "Histórico:",
+                enAttente: "AGUARDANDO CÁLCULO...",
+                vide: "VAZIO",
+                coutEssence: "Custo combustível:",
+                coutElectricite: "Custo eletricidade:",
+                coutTotal: "Custo total:",
+                invalide: "ENTRADA INVÁLIDA — VERIFIQUE OS CAMPOS",
                 placeholderPrixEssence: "Insira o preço do combustível em €/L",
                 placeholderPrixElectricite: "Insira o preço da eletricidade em €/kWh",
                 placeholderConsoEssence: "Insira o consumo em L/100km",
@@ -169,13 +333,22 @@
             },
             zh: {
                 titre: "混合动力车消费成本计算器",
+                labelLangue: "语言：",
                 labelPrixEssence: "燃料价格 (€/L):",
                 labelPrixElectricite: "电价 (€/kWh):",
                 labelConsoEssence: "燃料消耗 (L/100km):",
                 labelConsoElectricite: "电力消耗 (kWh/100km):",
                 labelDistance: "行驶距离 (km):",
-                btnCalculer: "计算成本",
-                btnEffacer: "清除历史",
+                btnCalculer: "[ 计算成本 ]",
+                btnEffacer: "[ 清除历史 ]",
+                labelResultat: "结果：",
+                labelHistorique: "历史记录：",
+                enAttente: "等待计算...",
+                vide: "空",
+                coutEssence: "燃料费用：",
+                coutElectricite: "电费：",
+                coutTotal: "总费用：",
+                invalide: "输入无效 — 请检查字段",
                 placeholderPrixEssence: "输入燃料价格 (€/L)",
                 placeholderPrixElectricite: "输入电价 (€/kWh)",
                 placeholderConsoEssence: "输入燃料消耗 (L/100km)",
@@ -184,13 +357,22 @@
             },
             ar: {
                 titre: "حاسبة تكلفة استهلاك المركبات الهجينة",
+                labelLangue: "اللغة:",
                 labelPrixEssence: "سعر الوقود (€/لتر):",
                 labelPrixElectricite: "سعر الكهرباء (€/كيلوواط ساعة):",
                 labelConsoEssence: "استهلاك الوقود (لتر/100كم):",
                 labelConsoElectricite: "استهلاك الكهرباء (كيلوواط ساعة/100كم):",
                 labelDistance: "المسافة المقطوعة (كم):",
-                btnCalculer: "احسب التكاليف",
-                btnEffacer: "مسح السجل",
+                btnCalculer: "[ احسب التكاليف ]",
+                btnEffacer: "[ مسح السجل ]",
+                labelResultat: "النتيجة:",
+                labelHistorique: "السجل:",
+                enAttente: "في انتظار الحساب...",
+                vide: "فارغ",
+                coutEssence: "تكلفة الوقود:",
+                coutElectricite: "تكلفة الكهرباء:",
+                coutTotal: "التكلفة الإجمالية:",
+                invalide: "إدخال غير صالح — تحقق من الحقول",
                 placeholderPrixEssence: "أدخل سعر الوقود (€/لتر)",
                 placeholderPrixElectricite: "أدخل سعر الكهرباء (€/كيلوواط ساعة)",
                 placeholderConsoEssence: "أدخل استهلاك الوقود (لتر/100كم)",
@@ -226,66 +408,89 @@
             const consoEssence = parseFloat(document.getElementById('consoEssence').value);
             const consoElectricite = parseFloat(document.getElementById('consoElectricite').value);
             const distance = parseFloat(document.getElementById('distance').value);
-            
+            const t = translations[langueCourante];
+            const zone = document.getElementById('resultat');
+
+            // Entrée invalide : message écrit dans le flux, jamais d'alerte
+            if ([prixEssence, prixElectricite, consoEssence, consoElectricite, distance].some(isNaN)) {
+                zone.textContent = t.invalide;
+                return;
+            }
+
             // Calcul du coût de l'essence
             const coutEssence = (consoEssence / 100) * distance * prixEssence;
-            
+
             // Calcul du coût de l'électricité
             const coutElectricite = (consoElectricite / 100) * distance * prixElectricite;
 
             // Calcul de l'addition des deux coûts
             const coutTotal = coutEssence + coutElectricite;
-            
+
             // Affichage des résultats
-            const resultText = `
-                <p>Coût pour l'essence: ${coutEssence.toFixed(2)} €</p>
-                <p>Coût pour l'électricité: ${coutElectricite.toFixed(2)} €</p>
-                <p><strong>Coût total: ${coutTotal.toFixed(2)} €</strong></p>
-            `;
-            document.getElementById('resultat').innerHTML = resultText;
-            
+            zone.innerHTML =
+                '<p>' + t.coutEssence + ' ' + coutEssence.toFixed(2) + ' €</p>' +
+                '<p>' + t.coutElectricite + ' ' + coutElectricite.toFixed(2) + ' €</p>' +
+                '<p><strong>' + t.coutTotal + ' ' + coutTotal.toFixed(2) + ' €</strong></p>';
+
             // Sauvegarde des résultats dans le local storage
             let historique = JSON.parse(localStorage.getItem('historique')) || [];
-            historique.push(resultText);
+            historique.push(coutEssence.toFixed(2) + ' € | ' + coutElectricite.toFixed(2) + ' € | ' + coutTotal.toFixed(2) + ' €');
             localStorage.setItem('historique', JSON.stringify(historique));
-            
+
             // Mise à jour de l'historique affiché
             afficherHistorique();
         }
-        
+
         function afficherHistorique() {
             const historique = JSON.parse(localStorage.getItem('historique')) || [];
-            document.getElementById('historique').innerHTML = historique.join('<hr>');
+            const zone = document.getElementById('historique');
+            if (historique.length === 0) {
+                zone.textContent = translations[langueCourante].vide;
+            } else {
+                zone.textContent = historique.join('\n──────────\n');
+            }
         }
-        
+
         function effacerHistorique() {
             // Effacer l'historique des résultats sans toucher aux prix
             localStorage.removeItem('historique');
             afficherHistorique();
         }
-        
+
         function changerLangue() {
             const langue = document.getElementById('language').value;
             localStorage.setItem('langue', langue); // Sauvegarder la langue choisie
-            document.getElementById('titre').innerText = translations[langue].titre;
-            document.getElementById('labelPrixEssence').innerText = translations[langue].labelPrixEssence;
-            document.getElementById('labelPrixElectricite').innerText = translations[langue].labelPrixElectricite;
-            document.getElementById('labelConsoEssence').innerText = translations[langue].labelConsoEssence;
-            document.getElementById('labelConsoElectricite').innerText = translations[langue].labelConsoElectricite;
-            document.getElementById('labelDistance').innerText = translations[langue].labelDistance;
-            document.getElementById('btnCalculer').innerText = translations[langue].btnCalculer;
-            document.getElementById('btnEffacer').innerText = translations[langue].btnEffacer;
-            document.getElementById('prixEssence').placeholder = translations[langue].placeholderPrixEssence;
-            document.getElementById('prixElectricite').placeholder = translations[langue].placeholderPrixElectricite;
-            document.getElementById('consoEssence').placeholder = translations[langue].placeholderConsoEssence;
-            document.getElementById('consoElectricite').placeholder = translations[langue].placeholderConsoElectricite;
-            document.getElementById('distance').placeholder = translations[langue].placeholderDistance;
+            const ancien = translations[langueCourante];
+            langueCourante = langue;
+            const t = translations[langue];
+            document.getElementById('titre').innerText = t.titre;
+            document.getElementById('labelLangue').innerText = t.labelLangue;
+            document.getElementById('labelPrixEssence').innerText = t.labelPrixEssence;
+            document.getElementById('labelPrixElectricite').innerText = t.labelPrixElectricite;
+            document.getElementById('labelConsoEssence').innerText = t.labelConsoEssence;
+            document.getElementById('labelConsoElectricite').innerText = t.labelConsoElectricite;
+            document.getElementById('labelDistance').innerText = t.labelDistance;
+            document.getElementById('btnCalculer').innerText = t.btnCalculer;
+            document.getElementById('btnEffacer').innerText = t.btnEffacer;
+            document.getElementById('labelResultat').innerText = t.labelResultat;
+            document.getElementById('labelHistorique').innerText = t.labelHistorique;
+            document.getElementById('prixEssence').placeholder = t.placeholderPrixEssence;
+            document.getElementById('prixElectricite').placeholder = t.placeholderPrixElectricite;
+            document.getElementById('consoEssence').placeholder = t.placeholderConsoEssence;
+            document.getElementById('consoElectricite').placeholder = t.placeholderConsoElectricite;
+            document.getElementById('distance').placeholder = t.placeholderDistance;
+            const zoneResultat = document.getElementById('resultat');
+            if (zoneResultat.textContent === ancien.enAttente) {
+                zoneResultat.textContent = t.enAttente;
+            } else if (zoneResultat.textContent === ancien.invalide) {
+                zoneResultat.textContent = t.invalide;
+            }
+            afficherHistorique();
         }
 
         // Charger les prix, l'historique et la langue lors du chargement de la page
         window.onload = function() {
             chargerPrix();
-            afficherHistorique();
             const langue = localStorage.getItem('langue') || 'fr'; // Charger la langue sauvegardée ou par défaut 'fr'
             document.getElementById('language').value = langue;
             changerLangue();
