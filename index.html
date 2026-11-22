@@ -6,6 +6,7 @@
     <meta name="description" content="Calculateur de coût de consommation pour véhicules hybrides. Calculez les coûts de carburant et d'électricité pour votre véhicule hybride.">
     <meta name="keywords" content="calculateur, coût, consommation, véhicule hybride, carburant, électricité">
     <meta name="author" content="Votre Nom">
+    <meta name="version" content="2.1.0">
     <meta property="og:title" content="Calculateur de Coût de Consommation Véhicule Hybride">
     <meta property="og:description" content="Calculez les coûts de carburant et d'électricité pour votre véhicule hybride.">
     <meta property="og:image" content="URL_de_votre_image">
@@ -223,10 +224,11 @@
         </div>
         <hr class="sep">
         <h2 id="labelResultat">Résultat :</h2>
-        <div class="zone" id="resultat">EN ATTENTE DE CALCUL...</div>
+        <div class="zone" id="resultat" aria-live="polite">EN ATTENTE DE CALCUL...</div>
         <h2 id="labelHistorique">Historique :</h2>
         <div class="zone" id="historique">VIDE</div>
         <footer>
+            <p>v2.1.0</p>
             <p class="cache">L1JNTSBjb25zbzogLy8gVEVSTUlOQUwtUlNY</p>
         </footer>
     </main>
@@ -381,37 +383,60 @@
             }
         };
 
+        // localStorage peut être indisponible (navigation privée) : accès sûrs
+        const store = {
+            get: function (cle) {
+                try { return localStorage.getItem(cle); } catch (e) { return null; }
+            },
+            set: function (cle, valeur) {
+                try { localStorage.setItem(cle, valeur); } catch (e) {}
+            },
+            remove: function (cle) {
+                try { localStorage.removeItem(cle); } catch (e) {}
+            }
+        };
+
+        const HISTORIQUE_MAX = 50; // garde les 50 derniers calculs
+
+        // Lit un champ : renvoie NaN si vide, non numérique ou négatif
+        function lireNombre(id) {
+            const v = parseFloat(document.getElementById(id).value);
+            return (isNaN(v) || v < 0) ? NaN : v;
+        }
+
         function sauvegarderPrix() {
-            // Sauvegarder les valeurs du prix de l'essence et de l'électricité dans le local storage
-            const prixEssence = parseFloat(document.getElementById('prixEssence').value);
-            const prixElectricite = parseFloat(document.getElementById('prixElectricite').value);
-            localStorage.setItem('prixEssence', prixEssence);
-            localStorage.setItem('prixElectricite', prixElectricite);
+            // Ne persister que des prix valides ; vider la clé si le champ est invalide
+            ['prixEssence', 'prixElectricite'].forEach(function (id) {
+                const v = lireNombre(id);
+                if (isNaN(v)) { store.remove(id); } else { store.set(id, String(v)); }
+            });
         }
 
         function chargerPrix() {
             // Charger les valeurs du prix de l'essence et de l'électricité depuis le local storage
-            const prixEssence = localStorage.getItem('prixEssence');
-            const prixElectricite = localStorage.getItem('prixElectricite');
-            if (prixEssence !== null) {
-                document.getElementById('prixEssence').value = prixEssence;
-            }
-            if (prixElectricite !== null) {
-                document.getElementById('prixElectricite').value = prixElectricite;
-            }
+            ['prixEssence', 'prixElectricite'].forEach(function (id) {
+                const v = store.get(id);
+                if (v !== null && v !== '' && !isNaN(parseFloat(v))) {
+                    document.getElementById(id).value = v;
+                }
+            });
+        }
+
+        function lireHistorique() {
+            try { return JSON.parse(store.get('historique')) || []; } catch (e) { return []; }
         }
 
         function calculerCouts() {
             // Récupérer les valeurs des champs
-            const prixEssence = parseFloat(document.getElementById('prixEssence').value);
-            const prixElectricite = parseFloat(document.getElementById('prixElectricite').value);
-            const consoEssence = parseFloat(document.getElementById('consoEssence').value);
-            const consoElectricite = parseFloat(document.getElementById('consoElectricite').value);
-            const distance = parseFloat(document.getElementById('distance').value);
+            const prixEssence = lireNombre('prixEssence');
+            const prixElectricite = lireNombre('prixElectricite');
+            const consoEssence = lireNombre('consoEssence');
+            const consoElectricite = lireNombre('consoElectricite');
+            const distance = lireNombre('distance');
             const t = translations[langueCourante];
             const zone = document.getElementById('resultat');
 
-            // Entrée invalide : message écrit dans le flux, jamais d'alerte
+            // Entrée invalide (vide, non numérique ou négative) : message écrit dans le flux, jamais d'alerte
             if ([prixEssence, prixElectricite, consoEssence, consoElectricite, distance].some(isNaN)) {
                 zone.textContent = t.invalide;
                 return;
@@ -432,17 +457,17 @@
                 '<p>' + t.coutElectricite + ' ' + coutElectricite.toFixed(2) + ' €</p>' +
                 '<p><strong>' + t.coutTotal + ' ' + coutTotal.toFixed(2) + ' €</strong></p>';
 
-            // Sauvegarde des résultats dans le local storage
-            let historique = JSON.parse(localStorage.getItem('historique')) || [];
+            // Sauvegarde des résultats dans le local storage (50 derniers max)
+            const historique = lireHistorique();
             historique.push(coutEssence.toFixed(2) + ' € | ' + coutElectricite.toFixed(2) + ' € | ' + coutTotal.toFixed(2) + ' €');
-            localStorage.setItem('historique', JSON.stringify(historique));
+            store.set('historique', JSON.stringify(historique.slice(-HISTORIQUE_MAX)));
 
             // Mise à jour de l'historique affiché
             afficherHistorique();
         }
 
         function afficherHistorique() {
-            const historique = JSON.parse(localStorage.getItem('historique')) || [];
+            const historique = lireHistorique();
             const zone = document.getElementById('historique');
             if (historique.length === 0) {
                 zone.textContent = translations[langueCourante].vide;
@@ -453,16 +478,18 @@
 
         function effacerHistorique() {
             // Effacer l'historique des résultats sans toucher aux prix
-            localStorage.removeItem('historique');
+            store.remove('historique');
             afficherHistorique();
         }
 
         function changerLangue() {
-            const langue = document.getElementById('language').value;
-            localStorage.setItem('langue', langue); // Sauvegarder la langue choisie
+            const brute = document.getElementById('language').value;
+            const langue = translations[brute] ? brute : 'fr'; // langue inconnue -> français
+            store.set('langue', langue); // Sauvegarder la langue choisie
             const ancien = translations[langueCourante];
             langueCourante = langue;
             const t = translations[langue];
+            document.documentElement.lang = langue;
             document.getElementById('titre').innerText = t.titre;
             document.getElementById('labelLangue').innerText = t.labelLangue;
             document.getElementById('labelPrixEssence').innerText = t.labelPrixEssence;
@@ -488,13 +515,20 @@
             afficherHistorique();
         }
 
+        // ENTRÉE dans un champ lance le calcul
+        document.querySelectorAll('input[type="number"]').forEach(function (champ) {
+            champ.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); calculerCouts(); }
+            });
+        });
+
         // Charger les prix, l'historique et la langue lors du chargement de la page
-        window.onload = function() {
+        window.addEventListener('load', function () {
             chargerPrix();
-            const langue = localStorage.getItem('langue') || 'fr'; // Charger la langue sauvegardée ou par défaut 'fr'
-            document.getElementById('language').value = langue;
+            const brute = store.get('langue') || 'fr'; // Charger la langue sauvegardée ou par défaut 'fr'
+            document.getElementById('language').value = translations[brute] ? brute : 'fr';
             changerLangue();
-        };
+        });
     </script>
 </body>
 </html>
